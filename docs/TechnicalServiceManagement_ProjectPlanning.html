@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Technical Service Management with Spare Parts Tracking</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #5f6b84;
+      --line: #d9e0ea;
+      --accent: #1d5fd1;
+      --paper: #ffffff;
+      --panel: #f4f7fb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: #eef3f8;
+      line-height: 1.5;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: var(--paper);
+      padding: 18mm 16mm;
+    }
+
+    .hero {
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, #eef5ff, #ffffff 58%);
+      padding: 16px 18px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 27px;
+      line-height: 1.15;
+      color: #0f172a;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    h2 {
+      margin: 22px 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #edf2f8;
+      font-size: 19px;
+      color: #0f172a;
+    }
+
+    h3 {
+      margin: 14px 0 8px;
+      font-size: 16px;
+      color: #16325c;
+    }
+
+    p {
+      margin: 8px 0;
+      font-size: 14px;
+    }
+
+    ul, ol {
+      margin: 8px 0 8px 22px;
+      padding: 0;
+      font-size: 14px;
+    }
+
+    li {
+      margin: 5px 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      padding: 12px 14px;
+      border-radius: 12px;
+    }
+
+    .diagram {
+      margin: 12px 0 6px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      padding: 8px;
+    }
+
+    .diagram img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 13px;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 9px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eef4fb;
+      color: #0f172a;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      padding: 10px 12px;
+      background: #f9fbfd;
+      border-left: 4px solid var(--accent);
+      color: #455066;
+      font-size: 13px;
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .page {
+        margin: 0;
+        width: auto;
+        min-height: auto;
+        padding: 12mm;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <h1>Technical Service Management with Spare Parts Tracking</h1>
+      <p class="subtitle">
+        Project Planning Report for YBS305 Visual Programming Course
+      </p>
+    </section>
+
+    <section>
+      <h2>1. Project Name and Business Description</h2>
+      <p>
+        This project is a Windows desktop application developed for electronic device service businesses.
+        The application helps staff register customers, accept faulty devices, open service requests,
+        track repair operations, manage spare parts usage, and monitor delivery progress.
+      </p>
+      <p>
+        The main business goal is to improve technical service workflow, reduce manual errors,
+        and provide consistent operational tracking for daily service activities.
+      </p>
+    </section>
+
+    <section>
+      <h2>2. Job Workflow Explanation</h2>
+      <ol>
+        <li>Reception staff registers a new customer or selects an existing customer.</li>
+        <li>A service request is created for the customer device.</li>
+        <li>Device information and the problem description are recorded.</li>
+        <li>The technician reviews the request and adds service operations.</li>
+        <li>Spare parts are assigned to the request when necessary.</li>
+        <li>The system automatically decreases stock quantity after part assignment.</li>
+        <li>The request status is updated through the repair lifecycle.</li>
+        <li>The manager monitors open jobs, finished jobs, and low-stock parts from the dashboard.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>3. Use Case Diagram</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Actors</h3>
+          <ul>
+            <li>Reception Staff</li>
+            <li>Technician</li>
+            <li>Manager</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Main Use Cases</h3>
+          <ul>
+            <li>Register customer</li>
+            <li>Create service request</li>
+            <li>Add service operation</li>
+            <li>Assign spare part</li>
+            <li>Update request status</li>
+            <li>Review dashboard</li>
+          </ul>
+        </div>
+      </div>
+      <div class="diagram">
+        <img src="use-case-diagram.png" alt="Use case diagram" />
+      </div>
+    </section>
+
+    <section>
+      <h2>4. Three Layer Architecture</h2>
+      <h3>4.1 User Interface Layer</h3>
+      <p>
+        The user interface is implemented as a WinForms desktop application and contains active forms
+        for dashboard monitoring, customer management, service request management, and spare part inventory.
+      </p>
+      <ul>
+        <li><strong>DashboardForm:</strong> Displays summary cards and the latest service requests.</li>
+        <li><strong>CustomerForm:</strong> Adds and lists customers.</li>
+        <li><strong>ServiceRequestForm:</strong> Creates requests, updates status, adds operations, and assigns parts.</li>
+        <li><strong>SparePartForm:</strong> Adds or refills stock and lists inventory.</li>
+      </ul>
+      <div class="diagram">
+        <img src="form-navigation-diagram.png" alt="Form navigation diagram" />
+      </div>
+
+      <h3>4.2 Business Logic Layer</h3>
+      <ul>
+        <li><strong>CustomerManager:</strong> Validates and stores customer information.</li>
+        <li><strong>ServiceRequestManager:</strong> Creates requests, updates statuses, records operations, and assigns spare parts.</li>
+        <li><strong>SparePartManager:</strong> Creates spare parts, refills stock, and provides inventory records.</li>
+        <li><strong>ApplicationBootstrapper:</strong> Initializes the database when the application starts.</li>
+      </ul>
+      <p>Important business rules:</p>
+      <ul>
+        <li>Customer name cannot be empty.</li>
+        <li>Device brand, model, and problem description are required for a service request.</li>
+        <li>Assigned spare part quantity cannot exceed available stock.</li>
+        <li>Request status moves to <em>In Progress</em> after operations or part assignments.</li>
+      </ul>
+
+      <h3>4.3 Data Layer</h3>
+      <p>
+        The data layer uses Entity Framework Core with SQLite for persistent storage.
+        User and service data are stored in relational tables.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Table</th>
+            <th>Main Fields</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Customers</td>
+            <td>Id, FullName, Phone, Email, CreatedAt</td>
+            <td>Stores customer identity and contact information.</td>
+          </tr>
+          <tr>
+            <td>Devices</td>
+            <td>Id, CustomerId, Brand, Model, SerialNumber</td>
+            <td>Stores customer device details.</td>
+          </tr>
+          <tr>
+            <td>ServiceRequests</td>
+            <td>Id, CustomerId, DeviceId, ProblemDescription, IntakeDate, Status</td>
+            <td>Tracks the main service workflow.</td>
+          </tr>
+          <tr>
+            <td>ServiceOperations</td>
+            <td>Id, ServiceRequestId, Description, OperationDate, Cost</td>
+            <td>Stores technician work steps and costs.</td>
+          </tr>
+          <tr>
+            <td>SpareParts</td>
+            <td>Id, Name, StockCode, UnitPrice, StockQuantity</td>
+            <td>Stores inventory data for service parts.</td>
+          </tr>
+          <tr>
+            <td>PartUsages</td>
+            <td>Id, ServiceRequestId, SparePartId, Quantity, UnitPriceSnapshot</td>
+            <td>Links used parts to service requests.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>5. Business Functions</h2>
+      <ul>
+        <li>Register and list customers</li>
+        <li>Add or refill spare parts</li>
+        <li>Create service requests</li>
+        <li>Update request status</li>
+        <li>Add service operations with cost</li>
+        <li>Assign spare parts and reduce stock automatically</li>
+        <li>Review dashboard summaries for management decisions</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>6. Database and Collection Usage</h2>
+      <p>
+        The project uses SQLite with Entity Framework Core as the main storage solution.
+        Collections are actively used inside the application for customer lists, service request grids,
+        operation histories, part usage histories, and entity navigation collections.
+      </p>
+    </section>
+
+    <section>
+      <h2>7. Development Environment</h2>
+      <ul>
+        <li>IDE: Visual Studio 2022</li>
+        <li>Language: C#</li>
+        <li>Framework: .NET 8 Windows</li>
+        <li>Architecture: Three-layer architecture</li>
+        <li>Database: SQLite</li>
+        <li>ORM: Entity Framework Core</li>
+        <li>Application Type: WinForms desktop application</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>8. Submission Note</h2>
+      <p>
+        This report is written in English as required by the course instructions.
+        The project is presented as a technical service management system,
+        while spare part tracking is positioned as a supporting business feature.
+      </p>
+    </section>
+
+    <p class="footer-note">
+      Prepared for the planning stage of Odev 2. The implementation already includes the matching
+      WinForms project structure, business classes, Entity Framework Core data layer, and active forms.
+    </p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,26 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+
+# Visual Studio
+.vs/
+
+# Local tooling/cache folders created in this workspace
+.dotnet-home/
+.edge-check-profile/
+.edge-pdf-profile/
+.lo-pdf-profile/
+
+# Logs and diagnostics
+*.log
+restore-diag.log
+ui-build-diag.log
+
+# OS/editor noise
+Thumbs.db
+Desktop.ini

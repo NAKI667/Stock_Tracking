@@ -185,9 +185,25 @@ public sealed class DashboardForm : Form
             _activeRequestsValue.Text = summary.ActiveRequests.ToString();
             _finishedRequestsValue.Text = summary.FinishedRequests.ToString();
             _lowStockValue.Text = summary.LowStockParts.ToString();
-            _requestGrid.DataSource = _serviceRequestManager.GetServiceRequests();
+        }
+        catch (Exception exception)
+        {
+            ShowSafeError(exception, "Dashboard Summary Error");
+        }
 
-            _auditGrid.DataSource = _auditService.GetRecentLogs()
+        try
+        {
+            _requestGrid.DataSource = _serviceRequestManager.GetServiceRequests();
+        }
+        catch (Exception exception)
+        {
+            ShowSafeError(exception, "Service Requests Load Error");
+        }
+
+        try
+        {
+            var logs = _auditService.GetRecentLogs();
+            _auditGrid.DataSource = logs
                 .Select(log => new
                 {
                     log.Timestamp,
@@ -199,7 +215,7 @@ public sealed class DashboardForm : Form
         }
         catch (Exception exception)
         {
-            ShowSafeError(exception, "Dashboard Refresh Error");
+            ShowSafeError(exception, "Audit Log Load Error");
         }
     }
 
@@ -212,7 +228,11 @@ public sealed class DashboardForm : Form
         else
         {
             System.Diagnostics.Debug.WriteLine($"[{title}] {exception}");
-            MessageBox.Show("An unexpected error occurred. Please try again.", title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(
+                $"An error occurred: {exception.Message}",
+                title,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
         }
     }
 }

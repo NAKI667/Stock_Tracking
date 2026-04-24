@@ -5,6 +5,8 @@ namespace TechnicalServiceManagement.Business.Managers;
 
 public sealed class SparePartManager
 {
+    private readonly AuditService _auditService = new();
+
     public IReadOnlyList<SparePart> GetSpareParts()
     {
         using var dbContext = TechnicalServiceDbContextFactory.CreateDbContext();
@@ -24,28 +26,12 @@ public sealed class SparePartManager
 
     public SparePart AddOrUpdateStock(string name, string stockCode, decimal unitPrice, int quantity)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new InvalidOperationException("Part name is required.");
-        }
+        var normalizedName = InputSanitizer.ValidateRequired(name, "Part name");
+        var normalizedCode = InputSanitizer.ValidateRequired(stockCode, "Stock code")
+            .ToUpperInvariant();
 
-        if (string.IsNullOrWhiteSpace(stockCode))
-        {
-            throw new InvalidOperationException("Stock code is required.");
-        }
-
-        if (unitPrice < 0)
-        {
-            throw new InvalidOperationException("Unit price cannot be negative.");
-        }
-
-        if (quantity <= 0)
-        {
-            throw new InvalidOperationException("Quantity must be greater than zero.");
-        }
-
-        var normalizedName = name.Trim();
-        var normalizedCode = stockCode.Trim().ToUpperInvariant();
+        InputSanitizer.ValidatePositiveAmount(unitPrice, "Unit price");
+        InputSanitizer.ValidatePositiveInteger(quantity, "Quantity");
 
         using var dbContext = TechnicalServiceDbContextFactory.CreateDbContext();
         var existingPart = dbContext.SpareParts
@@ -71,6 +57,10 @@ public sealed class SparePartManager
         }
 
         dbContext.SaveChanges();
+
+        _auditService.LogAction("Stock", "SparePart", existingPart.Id,
+            $"Stock updated: {normalizedName} ({normalizedCode}) qty +{quantity}, price {unitPrice:C}");
+
         return existingPart;
     }
 }

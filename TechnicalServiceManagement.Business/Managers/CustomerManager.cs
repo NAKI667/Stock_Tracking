@@ -5,6 +5,8 @@ namespace TechnicalServiceManagement.Business.Managers;
 
 public sealed class CustomerManager
 {
+    private readonly AuditService _auditService = new();
+
     public IReadOnlyList<Customer> GetCustomers()
     {
         using var dbContext = TechnicalServiceDbContextFactory.CreateDbContext();
@@ -15,24 +17,9 @@ public sealed class CustomerManager
 
     public Customer CreateCustomer(string fullName, string phone, string email)
     {
-        if (string.IsNullOrWhiteSpace(fullName))
-        {
-            throw new InvalidOperationException("Customer name is required.");
-        }
-
-        var normalizedName = fullName.Trim();
-        var normalizedPhone = phone.Trim();
-        var normalizedEmail = email.Trim();
-
-        if (string.IsNullOrWhiteSpace(normalizedPhone))
-        {
-            throw new InvalidOperationException("Phone number is required.");
-        }
-
-        if (!normalizedPhone.All(char.IsDigit))
-        {
-            throw new InvalidOperationException("Phone number can only contain digits.");
-        }
+        var normalizedName = InputSanitizer.ValidateRequired(fullName, "Customer name");
+        var normalizedPhone = InputSanitizer.ValidatePhone(phone);
+        var normalizedEmail = InputSanitizer.ValidateEmail(email);
 
         using var dbContext = TechnicalServiceDbContextFactory.CreateDbContext();
 
@@ -55,6 +42,9 @@ public sealed class CustomerManager
 
         dbContext.Customers.Add(customer);
         dbContext.SaveChanges();
+
+        _auditService.LogAction("Create", "Customer", customer.Id,
+            $"Registered customer: {normalizedName} | {normalizedPhone}");
 
         return customer;
     }

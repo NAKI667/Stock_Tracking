@@ -114,7 +114,20 @@ public sealed class SparePartForm : Form
         }
         catch (Exception exception)
         {
-            MessageBox.Show(exception.Message, "Inventory Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            ShowSafeError(exception, "Inventory Error");
+        }
+    }
+
+    private static void ShowSafeError(Exception exception, string title)
+    {
+        if (exception is InvalidOperationException)
+        {
+            MessageBox.Show(exception.Message, title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+        else
+        {
+            System.Diagnostics.Debug.WriteLine($"[{title}] {exception}");
+            MessageBox.Show("An unexpected error occurred. Please try again.", title, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 

@@ -103,7 +103,20 @@ public sealed class CustomerForm : Form
         }
         catch (Exception exception)
         {
-            MessageBox.Show(exception.Message, "Customer Save Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            ShowSafeError(exception, "Customer Save Error");
+        }
+    }
+
+    private static void ShowSafeError(Exception exception, string title)
+    {
+        if (exception is InvalidOperationException)
+        {
+            MessageBox.Show(exception.Message, title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+        else
+        {
+            System.Diagnostics.Debug.WriteLine($"[{title}] {exception}");
+            MessageBox.Show("An unexpected error occurred. Please try again.", title, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 

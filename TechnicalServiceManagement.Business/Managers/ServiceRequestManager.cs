@@ -7,6 +7,8 @@ namespace TechnicalServiceManagement.Business.Managers;
 
 public sealed class ServiceRequestManager
 {
+    private readonly AuditService _auditService = new();
+
     public IReadOnlyList<ServiceRequestListItem> GetServiceRequests()
     {
         using var dbContext = TechnicalServiceDbContextFactory.CreateDbContext();
@@ -37,20 +39,19 @@ public sealed class ServiceRequestManager
     {
         using var dbContext = TechnicalServiceDbContextFactory.CreateDbContext();
 
-        var requests = dbContext.ServiceRequests
-            .AsNoTracking()
-            .ToList();
+        // Bug fix: use database-level counting instead of loading all records into memory
+        var queryable = dbContext.ServiceRequests.AsNoTracking();
 
         return new DashboardSummary
         {
-            TotalRequests = requests.Count,
-            ActiveRequests = requests.Count(request =>
-                request.Status is ServiceRequestStatus.Received
-                or ServiceRequestStatus.InProgress
-                or ServiceRequestStatus.WaitingForPart),
-            FinishedRequests = requests.Count(request =>
-                request.Status is ServiceRequestStatus.Completed
-                or ServiceRequestStatus.Delivered),
+            TotalRequests = queryable.Count(),
+            ActiveRequests = queryable.Count(request =>
+                request.Status == ServiceRequestStatus.Received
+                || request.Status == ServiceRequestStatus.InProgress
+                || request.Status == ServiceRequestStatus.WaitingForPart),
+            FinishedRequests = queryable.Count(request =>
+                request.Status == ServiceRequestStatus.Completed
+                || request.Status == ServiceRequestStatus.Delivered),
             LowStockParts = dbContext.SpareParts.Count(part => part.StockQuantity <= 3)
         };
     }
@@ -67,29 +68,13 @@ public sealed class ServiceRequestManager
         string serialNumber,
         string problemDescription)
     {
-        if (customerId <= 0)
-        {
-            throw new InvalidOperationException("A customer must be selected.");
-        }
+        InputSanitizer.ValidatePositiveInteger(customerId, "Customer selection");
 
-        if (string.IsNullOrWhiteSpace(brand) || string.IsNullOrWhiteSpace(model))
-        {
-            throw new InvalidOperationException("Device brand and model are required.");
-        }
-
-        if (string.IsNullOrWhiteSpace(problemDescription))
-        {
-            throw new InvalidOperationException("Problem description is required.");
-        }
-
-        if (string.IsNullOrWhiteSpace(serialNumber))
-        {
-            throw new InvalidOperationException("Serial number is required.");
-        }
-
-        var normalizedBrand = brand.Trim();
-        var normalizedModel = model.Trim();
-        var normalizedSerialNumber = serialNumber.Trim().ToUpperInvariant();
+        var normalizedBrand = InputSanitizer.ValidateRequired(brand, "Device brand");
+        var normalizedModel = InputSanitizer.ValidateRequired(model, "Device model");
+        var normalizedSerial = InputSanitizer.ValidateRequired(serialNumber, "Serial number")
+            .ToUpperInvariant();
+        var normalizedProblem = InputSanitizer.ValidateRequired(problemDescription, "Problem description");
 
         using var dbContext = TechnicalServiceDbContextFactory.CreateDbContext();
 
@@ -97,7 +82,7 @@ public sealed class ServiceRequestManager
             ?? throw new InvalidOperationException("Selected customer could not be found.");
 
         var existingDevice = dbContext.Devices.FirstOrDefault(device =>
-            device.SerialNumber.ToUpper() == normalizedSerialNumber);
+            device.SerialNumber.ToUpper() == normalizedSerial);
 
         if (existingDevice is not null && existingDevice.CustomerId != customerId)
         {
@@ -109,7 +94,7 @@ public sealed class ServiceRequestManager
             CustomerId = customerId,
             Brand = normalizedBrand,
             Model = normalizedModel,
-            SerialNumber = normalizedSerialNumber
+            SerialNumber = normalizedSerial
         };
 
         if (existingDevice is null)
@@ -121,7 +106,7 @@ public sealed class ServiceRequestManager
         {
             CustomerId = customerId,
             Device = device,
-            ProblemDescription = problemDescription.Trim(),
+            ProblemDescription = normalizedProblem,
             IntakeDate = DateTime.Now,
             Status = ServiceRequestStatus.Received,
             Notes = $"Accepted by reception for {customer.FullName}.",
@@ -131,6 +116,9 @@ public sealed class ServiceRequestManager
 
         dbContext.ServiceRequests.Add(serviceRequest);
         dbContext.SaveChanges();
+
+        _auditService.LogAction("Create", "ServiceRequest", serviceRequest.Id,
+            $"New request for {customer.FullName}: {normalizedBrand} {normalizedModel} ({normalizedSerial})");
 
         return serviceRequest;
     }
@@ -146,6 +134,7 @@ public sealed class ServiceRequestManager
         var request = dbContext.ServiceRequests.Find(requestId)
             ?? throw new InvalidOperationException("Service request not found.");
 
+        var previousStatus = request.Status.ToString();
         request.Status = status;
 
         if (status is ServiceRequestStatus.Completed or ServiceRequestStatus.Delivered)
@@ -154,24 +143,16 @@ public sealed class ServiceRequestManager
         }
 
         dbContext.SaveChanges();
+
+        _auditService.LogAction("Update", "ServiceRequest", requestId,
+            $"Status changed: {previousStatus} -> {status}");
     }
 
     public void AddOperation(int requestId, string description, decimal cost)
     {
-        if (requestId <= 0)
-        {
-            throw new InvalidOperationException("Select a service request first.");
-        }
-
-        if (string.IsNullOrWhiteSpace(description))
-        {
-            throw new InvalidOperationException("Operation description is required.");
-        }
-
-        if (cost < 0)
-        {
-            throw new InvalidOperationException("Operation cost cannot be negative.");
-        }
+        InputSanitizer.ValidatePositiveInteger(requestId, "Service request selection");
+        var normalizedDescription = InputSanitizer.ValidateRequired(description, "Operation description");
+        InputSanitizer.ValidateNonNegativeAmount(cost, "Operation cost");
 
         using var dbContext = TechnicalServiceDbContextFactory.CreateDbContext();
         var request = dbContext.ServiceRequests.Find(requestId)
@@ -180,31 +161,23 @@ public sealed class ServiceRequestManager
         dbContext.ServiceOperations.Add(new ServiceOperation
         {
             ServiceRequestId = requestId,
-            Description = description.Trim(),
+            Description = normalizedDescription,
             Cost = cost,
             OperationDate = DateTime.Now
         });
 
         request.Status = ServiceRequestStatus.InProgress;
         dbContext.SaveChanges();
+
+        _auditService.LogAction("Create", "ServiceOperation", requestId,
+            $"Operation added: {normalizedDescription} (cost: {cost:C})");
     }
 
     public void AddPartUsage(int requestId, int sparePartId, int quantity)
     {
-        if (requestId <= 0)
-        {
-            throw new InvalidOperationException("Select a service request first.");
-        }
-
-        if (sparePartId <= 0)
-        {
-            throw new InvalidOperationException("Select a spare part first.");
-        }
-
-        if (quantity <= 0)
-        {
-            throw new InvalidOperationException("Quantity must be greater than zero.");
-        }
+        InputSanitizer.ValidatePositiveInteger(requestId, "Service request selection");
+        InputSanitizer.ValidatePositiveInteger(sparePartId, "Spare part selection");
+        InputSanitizer.ValidatePositiveInteger(quantity, "Quantity");
 
         using var dbContext = TechnicalServiceDbContextFactory.CreateDbContext();
 
@@ -240,6 +213,9 @@ public sealed class ServiceRequestManager
         sparePart.StockQuantity -= quantity;
         request.Status = ServiceRequestStatus.InProgress;
         dbContext.SaveChanges();
+
+        _auditService.LogAction("Create", "PartUsage", requestId,
+            $"Part assigned: {sparePart.Name} x{quantity} (stock remaining: {sparePart.StockQuantity})");
     }
 
     public ServiceRequestDetailsViewModel GetRequestDetails(int requestId)

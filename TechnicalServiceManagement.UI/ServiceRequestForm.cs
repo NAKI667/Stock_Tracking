@@ -360,15 +360,23 @@ public sealed class ServiceRequestForm : Form
             return;
         }
 
-        _selectedRequestId = request.Id;
-        var details = _serviceRequestManager.GetRequestDetails(_selectedRequestId);
+        try
+        {
+            _selectedRequestId = request.Id;
+            var details = _serviceRequestManager.GetRequestDetails(_selectedRequestId);
 
-        _selectedRequestLabel.Text = $"Request #{details.Id} | {details.CustomerName} | {details.DeviceName}";
-        _problemLabel.Text = $"Problem: {details.ProblemDescription}";
-        _totalCostLabel.Text = $"Current Total Cost: {details.TotalCost:C}";
-        _statusComboBox.SelectedItem = details.Status;
-        _operationsListBox.DataSource = details.Operations.ToList();
-        _partUsageListBox.DataSource = details.PartUsages.ToList();
+            _selectedRequestLabel.Text = $"Request #{details.Id} | {details.CustomerName} | {details.DeviceName}";
+            _problemLabel.Text = $"Problem: {details.ProblemDescription}";
+            _totalCostLabel.Text = $"Current Total Cost: {details.TotalCost:C}";
+            _statusComboBox.SelectedItem = details.Status;
+            _operationsListBox.DataSource = details.Operations.ToList();
+            _partUsageListBox.DataSource = details.PartUsages.ToList();
+        }
+        catch (Exception exception)
+        {
+            ResetSelectedRequestPanel();
+            ShowSafeError(exception, "Detail Load Error");
+        }
     }
 
     private void ResetSelectedRequestPanel()
@@ -406,7 +414,7 @@ public sealed class ServiceRequestForm : Form
         }
         catch (Exception exception)
         {
-            MessageBox.Show(exception.Message, "Request Create Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            ShowSafeError(exception, "Request Create Error");
         }
     }
 
@@ -429,7 +437,7 @@ public sealed class ServiceRequestForm : Form
         }
         catch (Exception exception)
         {
-            MessageBox.Show(exception.Message, "Status Update Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            ShowSafeError(exception, "Status Update Error");
         }
     }
 
@@ -448,7 +456,7 @@ public sealed class ServiceRequestForm : Form
         }
         catch (Exception exception)
         {
-            MessageBox.Show(exception.Message, "Operation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            ShowSafeError(exception, "Operation Error");
         }
     }
 
@@ -471,7 +479,20 @@ public sealed class ServiceRequestForm : Form
         }
         catch (Exception exception)
         {
-            MessageBox.Show(exception.Message, "Part Usage Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            ShowSafeError(exception, "Part Usage Error");
+        }
+    }
+
+    private static void ShowSafeError(Exception exception, string title)
+    {
+        if (exception is InvalidOperationException)
+        {
+            MessageBox.Show(exception.Message, title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+        else
+        {
+            System.Diagnostics.Debug.WriteLine($"[{title}] {exception}");
+            MessageBox.Show("An unexpected error occurred. Please try again.", title, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 

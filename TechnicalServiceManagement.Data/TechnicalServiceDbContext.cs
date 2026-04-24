@@ -12,9 +12,19 @@ public sealed class TechnicalServiceDbContext(DbContextOptions<TechnicalServiceD
     public DbSet<ServiceOperation> ServiceOperations => Set<ServiceOperation>();
     public DbSet<SparePart> SpareParts => Set<SparePart>();
     public DbSet<PartUsage> PartUsages => Set<PartUsage>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<AuditLog>(entity =>
+        {
+            entity.HasIndex(log => log.Timestamp);
+            entity.Property(log => log.Action).HasMaxLength(50);
+            entity.Property(log => log.EntityName).HasMaxLength(100);
+            entity.Property(log => log.Details).HasMaxLength(500);
+        });
+
+
         modelBuilder.Entity<SparePart>()
             .HasIndex(part => part.StockCode)
             .IsUnique();

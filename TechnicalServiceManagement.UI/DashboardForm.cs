@@ -1,5 +1,6 @@
 using TechnicalServiceManagement.Business.Managers;
 using TechnicalServiceManagement.Business.Models;
+using TechnicalServiceManagement.Data.Entities;
 using TechnicalServiceManagement.UI.UiHelpers;
 
 namespace TechnicalServiceManagement.UI;
@@ -7,11 +8,13 @@ namespace TechnicalServiceManagement.UI;
 public sealed class DashboardForm : Form
 {
     private readonly ServiceRequestManager _serviceRequestManager = new();
+    private readonly AuditService _auditService = new();
     private readonly Label _totalRequestsValue = CreateSummaryValueLabel();
     private readonly Label _activeRequestsValue = CreateSummaryValueLabel();
     private readonly Label _finishedRequestsValue = CreateSummaryValueLabel();
     private readonly Label _lowStockValue = CreateSummaryValueLabel();
     private readonly DataGridView _requestGrid = FormStyles.CreateReadOnlyGrid();
+    private readonly DataGridView _auditGrid = FormStyles.CreateReadOnlyGrid();
 
     public DashboardForm()
     {
@@ -23,18 +26,20 @@ public sealed class DashboardForm : Form
             Dock = DockStyle.Fill,
             Padding = new Padding(20),
             ColumnCount = 1,
-            RowCount = 4
+            RowCount = 5
         };
 
         rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 55));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 45));
 
         rootLayout.Controls.Add(CreateHeader(), 0, 0);
         rootLayout.Controls.Add(CreateButtonRow(), 0, 1);
         rootLayout.Controls.Add(CreateSummaryRow(), 0, 2);
         rootLayout.Controls.Add(FormStyles.CreateSection("Latest Service Requests", _requestGrid), 0, 3);
+        rootLayout.Controls.Add(FormStyles.CreateSection("Recent Activity Log", _auditGrid), 0, 4);
 
         Controls.Add(rootLayout);
         Load += (_, _) => RefreshDashboard();
@@ -172,12 +177,42 @@ public sealed class DashboardForm : Form
 
     private void RefreshDashboard()
     {
-        DashboardSummary summary = _serviceRequestManager.GetDashboardSummary();
+        try
+        {
+            DashboardSummary summary = _serviceRequestManager.GetDashboardSummary();
 
-        _totalRequestsValue.Text = summary.TotalRequests.ToString();
-        _activeRequestsValue.Text = summary.ActiveRequests.ToString();
-        _finishedRequestsValue.Text = summary.FinishedRequests.ToString();
-        _lowStockValue.Text = summary.LowStockParts.ToString();
-        _requestGrid.DataSource = _serviceRequestManager.GetServiceRequests();
+            _totalRequestsValue.Text = summary.TotalRequests.ToString();
+            _activeRequestsValue.Text = summary.ActiveRequests.ToString();
+            _finishedRequestsValue.Text = summary.FinishedRequests.ToString();
+            _lowStockValue.Text = summary.LowStockParts.ToString();
+            _requestGrid.DataSource = _serviceRequestManager.GetServiceRequests();
+
+            _auditGrid.DataSource = _auditService.GetRecentLogs()
+                .Select(log => new
+                {
+                    log.Timestamp,
+                    log.Action,
+                    Entity = log.EntityName,
+                    log.Details
+                })
+                .ToList();
+        }
+        catch (Exception exception)
+        {
+            ShowSafeError(exception, "Dashboard Refresh Error");
+        }
+    }
+
+    private static void ShowSafeError(Exception exception, string title)
+    {
+        if (exception is InvalidOperationException)
+        {
+            MessageBox.Show(exception.Message, title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+        else
+        {
+            System.Diagnostics.Debug.WriteLine($"[{title}] {exception}");
+            MessageBox.Show("An unexpected error occurred. Please try again.", title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 }

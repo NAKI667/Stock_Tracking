@@ -21,6 +21,10 @@
 restore-diag.log
 ui-build-diag.log
 
+# Course reference PDFs kept outside the submitted source code
+Odev.pdf
+duyuru.pdf
+
 # OS/editor noise
 Thumbs.db
 Desktop.ini

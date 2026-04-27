@@ -60,6 +60,7 @@ public sealed class ServiceRequestForm : Form
     public ServiceRequestForm()
     {
         FormStyles.ApplyBaseForm(this, "Service Request Management");
+        Size = new Size(1400, 800);
         MinimumSize = new Size(1340, 760);
         _serialTextBox.CharacterCasing = CharacterCasing.Upper;
         _serialTextBox.MaxLength = 50;
@@ -75,16 +76,33 @@ public sealed class ServiceRequestForm : Form
         var splitContainer = new SplitContainer
         {
             Dock = DockStyle.Fill,
-            SplitterDistance = 700,
-            Panel1MinSize = 580,
-            Panel2MinSize = 500
+            Panel1MinSize = 100,
+            Panel2MinSize = 100
         };
 
         splitContainer.Panel1.Controls.Add(CreateLeftPanel());
         splitContainer.Panel2.Controls.Add(CreateRightPanel());
 
         Controls.Add(splitContainer);
-        Load += (_, _) => RefreshPage();
+        Load += (_, _) =>
+        {
+            try
+            {
+                var desiredDistance = splitContainer.Width * 55 / 100;
+                var minDistance = splitContainer.Panel1MinSize;
+                var maxDistance = splitContainer.Width - splitContainer.Panel2MinSize - splitContainer.SplitterWidth;
+
+                if (maxDistance > minDistance && desiredDistance >= minDistance && desiredDistance <= maxDistance)
+                {
+                    splitContainer.SplitterDistance = desiredDistance;
+                }
+            }
+            catch
+            {
+                // Ignore splitter distance errors during layout
+            }
+            RefreshPage();
+        };
     }
 
     private Control CreateLeftPanel()

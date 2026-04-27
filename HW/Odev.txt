@@ -1,0 +1,46 @@
+=== PAGE 1 ===
+YBS305-Visual  Programming Course Term Project  
+March  24th, 202 6 
+ 
+Every student attending to  this course should prepare a software project that must include the 
+following mandatory parts.   
+The subject of the project is the development of software necessary for commercial activities. Stock 
+control, any reservation system, sales automation, shift tracking etc. are examples of activities.  The 
+project topic can be the entire project or an important part of a larger project.  
+• Only topics other than the examples shown in the course should be selected.   
+• Project should be studied individually.   
+• Project should be devel oped by Visual Studio 2022  with .Net Core 6 or above, Coded by C# , 
+as a Window desktop  or web  app.  
+• No paid or demo program plugins and additional libraries and packages will be used. Only 
+free Nuget packages are allowed.  
+ 
+Content,  Grading  and schedule : 
+1. HW1  (10%)  
+2. HW2 -Project Planning  (10%) (should be submitted up to  end of 9.th week),  
+a. Project name  and business description of project you want to implement,  
+b. Job workflow explanation of the project , 
+c. Draw “Use Case Diagram” of project to explain it in detail,  
+d. Project should be designed at least  3 layer  (Multitier Architecture ), 
+i. User Interface layer: Determining and designing the user interfaces needed 
+in the project, drawing the transition links between the forms /web pages , 
+ii. Business logic layer: Define the required business functions, model and 
+implement them using objects,  
+iii. Data layer: Identify user data that should be stored in the database and 
+organize them into tables,  
+e. Project planning section should be prepared as a word file  and send via OİS.  
+3. Project Prep aration /Implementation  (40%) (12th week)  
+a. Must have a GUI /WebForm  with at least 3 active forms /pages , 
+b. Must have at least two Class designed and used by the student ( at least one to 
+implement business logic),  
+c. Must use LINQ  by using at least one array or collection and specifying its usage.  
+d. Must employ a Database  by using Entity Framework Core ,  
+e. The project must be submitted in zip/rar format at OIS -LMS  & Github until the 12th 
+week.  
+f. The project must be presented in the laboratory in weeks 12, 13 and 14, otherwise 
+no grade will be given.  (The presentation schedule will be provided later. ) 
+4. Final Exam  (40%)  
+Notes:  
+• Project steps graded separately.  
+• All studies and the Report must be prepared in English.  
+• Assignments submitted after the deadline will not be accepted.  
+
